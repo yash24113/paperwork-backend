@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     supabase_service_key: str = ""
     supabase_storage_bucket: str = "paperwork-documents"
 
-    backend_cors_origins: str = "http://localhost:3000"
+    backend_cors_origins: str = "http://localhost:3000,https://paperwork-frontend.onrender.com"
 
     @property
     def cors_origins_list(self) -> list[str]:
