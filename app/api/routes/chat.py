@@ -12,7 +12,7 @@ async def chat_about_document(request: ChatRequest) -> ChatResponse:
         raise HTTPException(status_code=400, detail="Question cannot be empty")
 
     try:
-        return await ask_question(request.document_id, request.question)
+        return await ask_question(request.document_id, request.question, language=request.language)
     except DocumentNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Document not found") from exc
     except RuntimeError as exc:

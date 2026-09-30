@@ -19,6 +19,7 @@ def answer_question(state: AgentState) -> AgentState:
             extracted_fields=state.get("extracted_fields", []),
             chat_history=state.get("chat_history", []),
             question=question,
+            language=state.get("language") or "English",
         )
     except Exception as exc:  # noqa: BLE001 - surfaced to the caller via state
         return {**state, "error": f"answer generation failed: {exc}"}

@@ -8,6 +8,7 @@ class AgentState(TypedDict, total=False):
     file_bytes: bytes
     mime_type: str
     file_name: str
+    language: str
 
     document_type: str
     extracted_fields: list[dict[str, str | float | None]]

@@ -17,6 +17,7 @@ _ALLOWED_MIME_PREFIXES = ("image/", "application/pdf")
 async def upload_document(
     file: UploadFile = File(...),
     owner_email: str | None = Form(default=None),
+    language: str | None = Form(default=None),
 ) -> DocumentResponse:
     mime_type = file.content_type or "application/octet-stream"
     if not mime_type.startswith(_ALLOWED_MIME_PREFIXES):
@@ -32,6 +33,7 @@ async def upload_document(
             file_name=file.filename or "document",
             mime_type=mime_type,
             owner_email=owner_email,
+            language=language,
         )
     except RuntimeError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc

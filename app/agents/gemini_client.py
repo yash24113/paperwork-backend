@@ -53,7 +53,7 @@ def _clean_json_text(text: str) -> str:
     return cleaned.strip()
 
 
-def classify_and_extract(file_bytes: bytes, mime_type: str) -> dict:
+def classify_and_extract(file_bytes: bytes, mime_type: str, language: str = "English") -> dict:
     """Single multimodal call: classifies the document and pulls structured fields.
 
     Returns a dict with keys: document_type, summary, fields (list of
@@ -73,8 +73,11 @@ def classify_and_extract(file_bytes: bytes, mime_type: str) -> dict:
         '  "fields": [ {"field_name": string, "field_value": string, "confidence": number 0-1} ]\n'
         "}\n"
         "Extract every meaningful field a human would care about (names, dates, amounts, "
-        "account numbers, addresses, due dates, statuses). Do not include markdown fences "
-        "or any text outside the JSON object."
+        "account numbers, addresses, due dates, statuses). Field values that are proper nouns, "
+        "numbers, dates, or IDs should stay as written in the original document. Do not include "
+        "markdown fences or any text outside the JSON object.\n"
+        f"Write the document_type and summary in {language}, regardless of the document's own "
+        "language."
     )
 
     response = _generate_content_with_retry(
@@ -109,6 +112,7 @@ def answer_question_about_document(
     extracted_fields: list[dict],
     chat_history: list[dict[str, str]],
     question: str,
+    language: str = "English",
 ) -> str:
     """Answers a natural-language question grounded in the original document + extracted fields."""
     client = get_gemini_client()
@@ -127,7 +131,8 @@ def answer_question_about_document(
         f"Recent conversation:\n{history_text}\n\n"
         f"User question: {question}\n\n"
         "Answer concisely, in plain language, in 1-4 sentences. If the document does not "
-        "contain the answer, say so honestly instead of guessing."
+        "contain the answer, say so honestly instead of guessing. "
+        f"Reply in {language}, regardless of what language the question or document is in."
     )
 
     response = _generate_content_with_retry(

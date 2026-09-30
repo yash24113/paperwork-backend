@@ -9,7 +9,9 @@ def classify_document(state: AgentState) -> AgentState:
     reasons; this node owns document_type, extract_fields owns shaping the fields list.
     """
     try:
-        result = classify_and_extract(state["file_bytes"], state["mime_type"])
+        result = classify_and_extract(
+            state["file_bytes"], state["mime_type"], language=state.get("language") or "English"
+        )
     except Exception as exc:  # noqa: BLE001 - surfaced to the caller via state
         return {**state, "error": f"classification failed: {exc}"}
 

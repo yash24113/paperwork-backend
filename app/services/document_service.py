@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 from app.agents.graph import run_ingest, run_question
 from app.core.config import get_settings
+from app.core.languages import DEFAULT_LANGUAGE, language_name
 from app.core.supabase_client import get_supabase_client
 from app.models.schemas import (
     ChatMessage,
@@ -27,10 +28,13 @@ async def upload_and_process_document(
     file_name: str,
     mime_type: str,
     owner_email: str | None,
+    language: str | None = None,
 ) -> DocumentResponse:
     """Uploads the file to Supabase Storage, runs the agent graph, and persists results."""
     supabase = get_supabase_client()
     settings = get_settings()
+
+    language_code = (language or DEFAULT_LANGUAGE).lower()
 
     document_id = str(uuid.uuid4())
     storage_path = f"{document_id}/{file_name}"
@@ -51,6 +55,7 @@ async def upload_and_process_document(
                 "storage_path": storage_path,
                 "mime_type": mime_type,
                 "status": DocumentStatus.PROCESSING.value,
+                "language": language_code,
             }
         )
         .execute()
@@ -64,6 +69,7 @@ async def upload_and_process_document(
             mime_type=mime_type,
             file_name=file_name,
             document_id=document_id,
+            language=language_name(language_code),
         )
     except Exception as exc:  # noqa: BLE001
         supabase.table("documents").update(
@@ -126,6 +132,7 @@ async def get_document(document_id: str) -> DocumentResponse:
         summary=doc.get("summary"),
         status=DocumentStatus(doc["status"]),
         storage_path=doc["storage_path"],
+        language=doc.get("language") or DEFAULT_LANGUAGE,
         created_at=doc["created_at"],
         updated_at=doc["updated_at"],
         extracted_fields=[
@@ -154,11 +161,12 @@ async def list_documents() -> list[DocumentListItem]:
     ]
 
 
-async def ask_question(document_id: str, question: str) -> ChatResponse:
+async def ask_question(document_id: str, question: str, language: str | None = None) -> ChatResponse:
     supabase = get_supabase_client()
     settings = get_settings()
 
     document = await get_document(document_id)
+    language_code = (language or document.language or DEFAULT_LANGUAGE).lower()
 
     file_bytes = supabase.storage.from_(settings.supabase_storage_bucket).download(
         document.storage_path
@@ -187,6 +195,7 @@ async def ask_question(document_id: str, question: str) -> ChatResponse:
         extracted_fields=[f.model_dump() for f in document.extracted_fields],
         chat_history=chat_history,
         question=question,
+        language=language_name(language_code),
     )
 
     if result_state.get("error"):

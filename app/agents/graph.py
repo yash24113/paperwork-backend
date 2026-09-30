@@ -62,7 +62,13 @@ def build_graph():
     return graph.compile()
 
 
-def run_ingest(file_bytes: bytes, mime_type: str, file_name: str, document_id: str) -> AgentState:
+def run_ingest(
+    file_bytes: bytes,
+    mime_type: str,
+    file_name: str,
+    document_id: str,
+    language: str = "English",
+) -> AgentState:
     """Runs the full pipeline for a freshly uploaded document."""
     app_graph = build_graph()
     initial_state: AgentState = {
@@ -71,6 +77,7 @@ def run_ingest(file_bytes: bytes, mime_type: str, file_name: str, document_id: s
         "mime_type": mime_type,
         "file_name": file_name,
         "chat_history": [],
+        "language": language,
     }
     return app_graph.invoke(initial_state)
 
@@ -83,6 +90,7 @@ def run_question(
     extracted_fields: list[dict],
     chat_history: list[dict[str, str]],
     question: str,
+    language: str = "English",
 ) -> AgentState:
     """Runs the pipeline in Q&A mode, skipping straight past summarize to answer_question."""
     app_graph = build_graph()
@@ -94,5 +102,6 @@ def run_question(
         "extracted_fields": extracted_fields,
         "chat_history": chat_history,
         "question": question,
+        "language": language,
     }
     return app_graph.invoke(initial_state)

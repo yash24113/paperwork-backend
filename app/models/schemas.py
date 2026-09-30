@@ -24,6 +24,7 @@ class DocumentResponse(BaseModel):
     summary: str | None = None
     status: DocumentStatus
     storage_path: str
+    language: str = "en"
     created_at: datetime
     updated_at: datetime
     extracted_fields: list[ExtractedField] = Field(default_factory=list)
@@ -46,6 +47,7 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     document_id: str
     question: str
+    language: str | None = None
 
 
 class ChatResponse(BaseModel):
