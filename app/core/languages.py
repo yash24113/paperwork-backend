@@ -1,6 +1,7 @@
 SUPPORTED_LANGUAGES: dict[str, str] = {
     "en": "English",
     "hi": "Hindi",
+    "gu": "Gujarati",
     "es": "Spanish",
     "fr": "French",
     "de": "German",
